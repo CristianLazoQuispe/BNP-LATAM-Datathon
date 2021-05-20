@@ -1,6 +1,11 @@
 # Ignore Dataset
 Dataset/
+02.Code/
+*Dataset/
+*02.Code/
 *.tsv
+*__pycache__/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
