@@ -130,7 +130,7 @@ class bnp_process_text:
             sentences = [x]
             predictions = self.model.predict(sentences)
 
-            return predictions[0][0][0]
+            return predictions[0][0][0].split('__')[-1]
     def set_model(self,model_name,x):
         self.to_language = x
         if model_name=='deepGoogleTranslator':
