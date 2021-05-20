@@ -1,6 +1,9 @@
+01.Data/
+03.Models/
+
+
 # Ignore Dataset
 Dataset/
-02.Code/
 *Dataset/
 *02.Code/
 *.tsv
