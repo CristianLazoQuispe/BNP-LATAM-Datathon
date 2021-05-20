@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 from IPython.display import display, HTML
 
-#https://amitness.com/2019/07/identify-text-language-python/#:~:text=Fasttext%20is%20an%20open-source,subword%20information%20and%20model%20compression.
-
 
 
 def my_df_describe(df,name = 'dataset',show = True):
@@ -75,32 +73,94 @@ def clean_null(df_train,df_test,limit = 0):
     
     return df_train,df_test
 
-def process_countries(x):
-    if type(x)!= str:
-        return x
-    if 'en:' in x:
-        for element in x.split(' '):
-            if not 'en:' in element:                
-                return element.strip(',')
-        for element in x.split(','):
-            if not 'en:' in element:
-                return element.strip(',')
-        
-    return x
 
-def process_aditives(x):
-    if type(x)!= str:
+
+
+class process_categories:
+    def __init__(self):
+        # https://www.kaggle.com/statchaitya/country-to-continent
+        countries = pd.read_csv('../../Dataset/countryContinent.csv', encoding='ISO-8859-1', sep=',')
+        self.country_to_region_code = pd.Series(countries.region_code.values,index=countries.country).to_dict()
+        self.country_to_region_code['United States'] = 19.0
+        self.country_to_region_code['United Kingdom'] = 150.0
+        self.country_to_region_code['Russia'] = 150.0
+        self.country_to_region_code['Taiwan'] = 142.0
+        self.countrycode_to_region_code = pd.Series(countries.region_code.values,index=countries.code_2).to_dict()
+
+        self.metrics = [[' g',' g',1],[' kg',' kg',100],[' oz',' oz',28.3495],[' ml',' ml',1],[' lb',' lb',453.592],[' fl',' fl',29.57352956]]
+
+    def process_countries(self,x):
+        if type(x)!= str:
+            return x
+        if 'en:' in x:
+            for element in x.split(' '):
+                if not 'en:' in element:                
+                    return element.strip(',')
+            for element in x.split(','):
+                if not 'en:' in element:
+                    return element.strip(',')        
         return x
-    texto = ''
-    for additive in x.split(']  ['):
-        for element in additive.split('->'):
-            if not 'en:' in element:                
-                for r in [' ',']','[']:
-                    element = element.strip(r)                
-                texto+=element+','
-                break
-    return texto
-    
+
+    def process_aditives(self,x):
+        if type(x)!= str:
+            return x
+        texto = ''
+        for additive in x.split(']  ['):
+            for element in additive.split('->'):
+                if not 'en:' in element:                
+                    for r in [' ',']','[']:
+                        element = element.strip(r)                
+                    texto+=element+','
+                    break
+        return texto
+
+    def get_region_code(self,x):
+        # use ['countries','countries_en'] columns
+        if type(x[0])!= str and type(x[1])!= str:
+            return 0
+        if x[0].split(',')[0] in self.countrycode_to_region_code:
+            return self.countrycode_to_region_code[x[0].split(',')[0]]
+        if x[1].split(',')[0] in self.country_to_region_code:
+            return self.country_to_region_code[x[1].split(',')[0]]
+        else:
+            return 160
+
+
+
+    def str_process(self,x,separator,split_str,factor=1):
+        if separator in x:
+            for a in x.split(split_str):
+                try:
+                    a = int(a)*factor
+                    return True,a
+                except:
+                    pass
+        return False,None
+
+
+    def get_quantity(self,x):
+        if x== np.nan:
+            return x
+        try:
+            x = int(x)
+            return x
+        except:
+            pass
+        try:
+            if type(x)!= str:
+                return x
+            x = x.lower()
+            for metric in self.metrics:
+                band, value = self.str_process(x,metric[0],metric[1],metric[2])
+                if band:
+                    return value
+            
+        except:
+            return x
+
+        
+#https://amitness.com/2019/07/identify-text-language-python/#:~:text=Fasttext%20is%20an%20open-source,subword%20information%20and%20model%20compression.
+
 import fasttext
 from deep_translator import GoogleTranslator as deepGoogleTranslator
 from deep_translator import (
